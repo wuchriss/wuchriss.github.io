@@ -1,30 +1,168 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Project 1</title>
+    <title>Project 1 - Colorizing the Prokudin-Gorskii Photo Collection</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            line-height: 1.6;
         }
-        img {
-            max-width: 250px;
-            margin: 10px;
+        .section {
+            margin-bottom: 40px;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .image-item {
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .image-item img {
+            max-width: 100%;
+            height: auto;
+        }
+        .offset-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
-    <h1>Project 1</h1>
+    <h1>Project 1 - Colorizing the Prokudin-Gorskii Photo Collection</h1>
     
-    <h2>Part 1</h2>
-    <img src="media/selfie_close.jpg" alt="Close selfie">
-    <img src="media/selfie_zoomed.jpg" alt="Zoomed selfie">
-    
-    <h2>Part 2</h2>
-    <img src="media/street_shot.jpg" alt="Street shot">
-    <img src="media/street_shot_zoomed.jpg" alt="Zoomed street shot">
-    
-    <h2>Part 3</h2>
-    <img src="media/melatonin.gif" alt="Melatonin gif">
+    <div class="section">
+        <h2>Overview and Approach</h2>
+        <p>This project involved implementing an algorithm to automatically colorize the digitized Prokudin-Gorskii glass plate images. The goal was to extract the three color channel images, align them, and combine them into a single RGB color image, with the primary challenge being the alignment of the different color channels.</p>
+        
+        <p>My approach involved implementing image alignment using exhaustive search for smaller images and an image pyramid for larger images. The only two metrics used were Euclidean distance and normalized cross-correlation, which seemed to be enough to achieve decent alignment for all images.</p>
+        
+        <p>There were no problematic images, but my largest challenge was performance related when using the same exhaustive range at each level of the image pyramid, leading to costly image shifting/cropping for the largest images. This was solved by reducing the range of pixels searched as I traveled down the image pyramid.</p>
+    </div>
+
+    <div class="section">
+        <h2>Results</h2>
+        <p>Below are the results of the colorization algorithm on all provided example images, along with the calculated offsets for each color channel:</p>
+        
+        <div class="image-grid">
+            <div class="image-item">
+                <h4>Cathedral</h4>
+                <img src="media/results/cathedral_colorized.jpg" alt="Cathedral colorized">
+                <div class="offset-info">Green: (5, 2), Red: (12, 3)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Church</h4>
+                <img src="media/results/church_colorized.jpg" alt="Church colorized">
+                <div class="offset-info">Green: (25, 3), Red: (58, -5)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Emir</h4>
+                <img src="media/results/emir_colorized.jpg" alt="Emir colorized">
+                <div class="offset-info">Green: (49, 24), Red: (103, 43)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Harvesters</h4>
+                <img src="media/results/harvesters_colorized.jpg" alt="Harvesters colorized">
+                <div class="offset-info">Green: (60, 16), Red: (124, 13)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Icon</h4>
+                <img src="media/results/icon_colorized.jpg" alt="Icon colorized">
+                <div class="offset-info">Green: (41, 17), Red: (89, 23)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Italil</h4>
+                <img src="media/results/italil_colorized.jpg" alt="Italil colorized">
+                <div class="offset-info">Green: (38, 21), Red: (77, 35)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Lastochikino</h4>
+                <img src="media/results/lastochikino_colorized.jpg" alt="Lastochikino colorized">
+                <div class="offset-info">Green: (-3, -2), Red: (76, -9)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Lugano</h4>
+                <img src="media/results/lugano_colorized.jpg" alt="Lugano colorized">
+                <div class="offset-info">Green: (41, -17), Red: (93, -29)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Melons</h4>
+                <img src="media/results/melons_colorized.jpg" alt="Melons colorized">
+                <div class="offset-info">Green: (82, 9), Red: (165, 8)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Monastery</h4>
+                <img src="media/results/monastery_colorized.jpg" alt="Monastery colorized">
+                <div class="offset-info">Green: (-3, 2), Red: (3, 2)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Self Portrait</h4>
+                <img src="media/results/self_portrait_colorized.jpg" alt="Self portrait colorized">
+                <div class="offset-info">Green: (79, 29), Red: (165, 32)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Siren</h4>
+                <img src="media/results/siren_colorized.jpg" alt="Siren colorized">
+                <div class="offset-info">Green: (49, -7), Red: (96, -25)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Three Generations</h4>
+                <img src="media/results/three_generations_colorized.jpg" alt="Three generations colorized">
+                <div class="offset-info">Green: (53, 13), Red: (112, 10)</div>
+            </div>
+            
+            <div class="image-item">
+                <h4>Tobolsk</h4>
+                <img src="media/results/tobolsk_colorized.jpg" alt="Tobolsk colorized">
+                <div class="offset-info">Green: (3, 2), Red: (6, 3)</div>
+            </div>
+        </div>
+        
+        <p><em>Note: Offsets are given as (x, y) coordinates relative to the blue channel. All .tif images used pyramid depth 3, while .jpg images used depth 0. The Emir image used normalized cross-correlation for better alignment.</em></p>
+    </div>
+
+    <div class="section">
+        <h2>Additional Examples from Prokudin-Gorskii Collection</h2>
+        <p>This section contains a few additional images downloaded from the Prokudin-Gorskii collection (I thought they looked cool). The large .tif images were downloaded and image pyramids of depth 3 with euclidean distance as the metric was used to align the color channels.</p>
+        
+        <div class="image-grid">
+            <div class="image-item">
+                <h4>Boy</h4>
+                <img src="media/additional/Boy_colorized.jpg" alt="Boy colorized">
+            </div>
+            
+            <div class="image-item">
+                <h4>Khan</h4>
+                <img src="media/additional/Khan_colorized.jpg" alt="Khan colorized">
+            </div>
+            
+            <div class="image-item">
+                <h4>Mosque</h4>
+                <img src="media/additional/Mosque_colorized.jpg" alt="Mosque colorized">
+            </div>
+            
+            <div class="image-item">
+                <h4>Sunset</h4>
+                <img src="media/additional/Sunset_colorized.jpg" alt="Sunset colorized">
+            </div>
+        </div>
+    </div>
 </body>
 </html>
