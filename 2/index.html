@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 2: Fun with Filters and Frequencies</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #666;
+            margin-top: 25px;
+        }
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .image-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .image-item {
+            text-align: center;
+        }
+        img {
+            max-width: 400px;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .code-img {
+            max-width: 600px;
+        }
+        .comparison-img {
+            max-width: 300px;
+        }
+        .turing-img {
+            max-width: 350px;
+        }
+        p {
+            text-align: justify;
+            margin: 15px 0;
+        }
+        .caption {
+            font-style: italic;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project 2: Fun with Filters and Frequencies</h1>
+    
+    <h2>Part 1: Fun with Filters</h2>
+    
+    <h3>Part 1.1: Convolutions from Scratch!</h3>
+    
+    <p>I implemented 2D convolution from scratch using only NumPy, then compared the results with SciPy's built-in convolution function. My implementation handles padding correctly to maintain output size and processes boundaries with zero-padding.</p>
+    
+    <div class="image-container">
+        <img src="media/1.1/convolve_function.png" alt="Convolution Function Implementation" class="code-img">
+        <div class="caption">My NumPy-only convolution implementation with proper padding and boundary handling</div>
+    </div>
+    
+    <h4>Runtime and Boundary Comparison</h4>
+    <p>I compared my implementation with SciPy's <code>convolve2d</code> function. Both produced identical results. However, there were significant performance differences:</p>
+    <ul>
+        <li><strong>My Implementation:</strong> ~7 seconds</li>
+        <li><strong>SciPy Implementation:</strong> ~0.5 seconds</li>
+        <li><strong>Boundary Handling:</strong> By default, SciPy uses zero padding similar to my implementation, but they provide a few additional options as well.</li>
+    </ul>
+    
+    <h4>Filter Results</h4>
+    <p>I tested my convolution implementation with three different filters: a 9x9 box filter for smoothing, and finite difference operators Dx and Dy for edge detection.</p>
+    
+    <div class="image-container">
+        <img src="media/1.1/kernels.png" alt="Filter Kernels" class="code-img">
+        <div class="caption">The finite difference operators Dx, Dy, and 9x9 box filter kernels used for testing</div>
+    </div>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/1.1/me.jpg" alt="Original Image" class="comparison-img">
+            <div class="caption">Original Image</div>
+        </div>
+        <div class="image-item">
+            <img src="media/1.1/me_box_filter.jpg" alt="Box Filter Result" class="comparison-img">
+            <div class="caption">9x9 Box Filter (Smoothed)</div>
+        </div>
+    </div>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/1.1/me_dx.jpg" alt="Dx Filter Result" class="comparison-img">
+            <div class="caption">Dx Filter - Vertical Edges</div>
+        </div>
+        <div class="image-item">
+            <img src="media/1.1/me_dy.jpg" alt="Dy Filter Result" class="comparison-img">
+            <div class="caption">Dy Filter - Horizontal Edges</div>
+        </div>
+    </div>
+    
+    <h3>Part 1.2: Finite Difference Operator</h3>
+    
+    <p>In this section, I applied finite difference operators to the cameraman image to detect edges using gradient-based methods. First, I computed the partial derivatives in both x and y directions using the Dx and Dy operators.</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/1.2/cameraman_dx.jpg" alt="Partial Derivative X" class="comparison-img">
+            <div class="caption">∂I/∂x - Vertical Edges</div>
+        </div>
+        <div class="image-item">
+            <img src="media/1.2/cameraman_dy.jpg" alt="Partial Derivative Y" class="comparison-img">
+            <div class="caption">∂I/∂y - Horizontal Edges</div>
+        </div>
+    </div>
+    
+    <p>Then, I calculated the gradient magnitude by combining these partial derivatives using the formula: magnitude = √(Dx² + Dy²).</p>
+    
+    <div class="image-container">
+        <img src="media/1.2/cameraman_gradient_magnitude.jpg" alt="Gradient Magnitude" class="comparison-img">
+        <div class="caption">Gradient Magnitude Image - Combined edge strength from both directions</div>
+    </div>
+    
+    <p>To create a clean edge image, I binarized the gradient magnitude using thresholding. After experimenting with different threshold values (20, 50, 100), I found that a threshold around 80-90 worked best to suppress noise while preserving real edges. The edge image below uses a threshold of 85.</p>
+    
+    <div class="image-container">
+        <img src="media/1.2/cameraman_edges.jpg" alt="Edge Image" class="comparison-img">
+        <div class="caption">Binary Edge Image (Threshold = 85)</div>
+    </div>
+    
+    <h3>Part 1.3: Derivative of Gaussian (DoG) Filter</h3>
+    
+    <p>In this section, I implemented Gaussian filters using cv2.getGaussianKernel and constructed Derivative of Gaussian (DoG) filters. The DoG approach combines smoothing and edge detection in a single operation, reducing noise while detecting edges more effectively than raw finite difference operators.</p>
+    
+    <h4>Gaussian Kernel Construction</h4>
+    <div class="image-container">
+        <img src="media/1.3/gaussian_kernel.png" alt="Gaussian Kernel Construction" class="code-img">
+        <div class="caption">Creating 2D Gaussian kernel using cv2.getGaussianKernel</div>
+    </div>
+    
+    <h4>DoG Filter Construction</h4>
+    <div class="image-container">
+        <img src="media/1.3/dog_filter_construction.png" alt="DoG Filter Construction" class="code-img">
+        <div class="caption">Constructing Derivative of Gaussian filters by convolving Gaussian with finite difference operators</div>
+    </div>
+    
+    <h4>Filter Visualization</h4>
+    <p>The DoG filters combine the smoothing properties of Gaussian filters with the edge detection capabilities of finite difference operators:</p>
+    
+    <div class="image-container">
+        <img src="media/1.3/dog_filters.png" alt="DoG Filters Visualization" class="code-img">
+        <div class="caption">Visualization of DoG_x and DoG_y filters showing their smoothing and edge detection properties</div>
+    </div>
+    
+    <h4>Results Comparison</h4>
+    <p>I applied both Gaussian smoothing and DoG filters to the cameraman image, then compared the results with the finite difference method from Part 1.2:</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/1.3/cameraman_smooth.jpg" alt="Gaussian Smoothed Cameraman" class="comparison-img">
+            <div class="caption">Gaussian Smoothed Image</div>
+        </div>
+        <div class="image-item">
+            <img src="media/1.3/dog_dx.jpg" alt="DoG X Direction" class="comparison-img">
+            <div class="caption">DoG Filter - X Direction</div>
+        </div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/1.3/dog_dy.jpg" alt="DoG Y Direction" class="comparison-img">
+        <div class="caption">DoG Filter - Y Direction</div>
+    </div>
+    
+    <h4>Edge Detection Comparison</h4>
+    <p>The key advantage of the DoG approach can be seen when comparing the final edge images. The DoG method produces cleaner results with significantly reduced noise:</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/1.3/smooth_edges.jpg" alt="Smooth Then Edge Detection" class="comparison-img">
+            <div class="caption">Smooth → Edge Detection</div>
+        </div>
+        <div class="image-item">
+            <img src="media/1.3/dog_edges.jpg" alt="DoG Edge Detection" class="comparison-img">
+            <div class="caption">DoG Edge Detection</div>
+        </div>
+    </div>
+    
+    <p><strong>Key Improvements with DoG:</strong> All the noise present in the finite difference method (Part 1.2) has been eliminated. The edges are larger and more defined. The smoothing step removes high-frequency noise while keeping important edge information, resulting in better edge detection performance.</p>
+    
+    <h2>Part 2: Fun with Frequencies</h2>
+    
+    <h3>Part 2.1: Image "Sharpening"</h3>
+    
+    <p>In this section, I implemented the unsharp masking technique for image sharpening. The unsharp mask filter works by enhancing high-frequency details in an image to make it appear sharper.</p>
+    
+    <div class="image-container">
+        <img src="media/2.1/unsharp_mask_filter.png" alt="Unsharp Mask Filter Implementation" class="code-img">
+        <div class="caption">Implementation of the unsharp mask filter</div>
+    </div>
+    
+    <h4>How Unsharp Masking Works</h4>
+    <p>The unsharp masking technique is based on the relationship between blur filters and high frequencies:</p>
+    <ul>
+        <li><strong>Low frequencies:</strong> Obtained by applying a Gaussian blur filter to the original image</li>
+        <li><strong>High frequencies:</strong> Extracted by subtracting the blurred version from the original image</li>
+        <li><strong>Sharpening:</strong> Adding scaled high frequencies back to the original image enhances edge details</li>
+    </ul>
+    <p>The mathematical formula is: <strong>Sharpened = Original + α × (Original - Blurred)</strong>, where α controls the sharpening strength. This can be combined into a single convolution operation: <strong>[(1 + α) × δ - α × Gaussian] * Original</strong>, where δ is the impulse function.</p>
+    
+    <h4>Taj Mahal Image Results</h4>
+    <p>Here are the results of applying unsharp masking to the Taj Mahal image, showing each step of the process:</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.1/taj_original.jpg" alt="Original Taj" class="comparison-img">
+            <div class="caption">Original Image</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.1/taj_blurred.jpg" alt="Blurred Taj" class="comparison-img">
+            <div class="caption">Gaussian Blurred (Low Frequencies)</div>
+        </div>
+    </div>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.1/taj_high_freq.jpg" alt="High Frequency Taj" class="comparison-img">
+            <div class="caption">High Frequencies (Original - Blurred)</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.1/taj_sharpened.jpg" alt="Sharpened Taj" class="comparison-img">
+            <div class="caption">Sharpened Image (α = 1.5)</div>
+        </div>
+    </div>
+    
+    <h4>Effect of Varying Sharpening Amount</h4>
+    <p>To demonstrate how the α parameter affects the sharpening result, I applied the unsharp mask filter to an image of Alan Turing with different α values. As α increases, the sharpening effect becomes more pronounced, but excessive values can introduce artifacts:</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.1/turing.jpg" alt="Original Turing" class="turing-img">
+            <div class="caption">Original Image</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.1/turing_alpha_1.0.jpg" alt="Turing Alpha 1.0" class="turing-img">
+            <div class="caption">α = 1.0 (Moderate Sharpening)</div>
+        </div>
+    </div>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.1/turing_alpha_2.0.jpg" alt="Turing Alpha 2.0" class="turing-img">
+            <div class="caption">α = 2.0 (Strong Sharpening)</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.1/turing_alpha_5.0.jpg" alt="Turing Alpha 5.0" class="turing-img">
+            <div class="caption">α = 5.0 (Very Strong Sharpening)</div>
+        </div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/2.1/turing_alpha_10.0.jpg" alt="Turing Alpha 10.0" class="turing-img">
+        <div class="caption">α = 10.0 (Excessive)</div>
+    </div>
+    
+    <h3>Part 2.2: Hybrid Images</h3>
+    
+    <p>Hybrid images are static images that change in interpretation as a function of the viewing distance. They exploit the way the human visual system processes different spatial frequencies at different distances. At close viewing distances, we perceive high-frequency details, while at far distances, we see low-frequency information.</p>
+    
+    <p>The technique works by combining the low-frequency components of one image with the high-frequency components of another image. This creates a composite image that appears as one thing when viewed up close and another when viewed from afar.</p>
+    
+    <h4>Derek + Nutmeg: Complete Process</h4>
+    <p>For the Derek + Nutmeg hybrid, I'll show the complete process including original images, alignment, filtering, Fourier analysis, and the final result. The parameters used were σ₁ = 10 for low-frequency filtering and σ₂ = 6 for high-frequency filtering.</p>
+    
+    <h5>Original and Aligned Images</h5>
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.2/im1_aligned.jpg" alt="Derek Aligned" class="comparison-img">
+            <div class="caption">Derek (Aligned) - Low Frequency Source</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.2/im2_aligned.jpg" alt="Nutmeg Aligned" class="comparison-img">
+            <div class="caption">Nutmeg (Aligned) - High Frequency Source</div>
+        </div>
+    </div>
+    
+    <h5>Frequency Filtering Results</h5>
+    <p>The low-frequency component is extracted by applying a Gaussian blur to Derek's image, while the high-frequency component is obtained by subtracting a blurred version of Nutmeg from the original Nutmeg image.</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.2/low_freq.jpg" alt="Low Frequency Component" class="comparison-img">
+            <div class="caption">Low Frequency Component (Derek, σ = 10)</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.2/high_freq.jpg" alt="High Frequency Component" class="comparison-img">
+            <div class="caption">High Frequency Component (Nutmeg, σ = 6)</div>
+        </div>
+    </div>
+    
+    <h5>Fourier Transform Analysis</h5>
+    <p>The Fourier transforms show the frequency content of each image. The log magnitude of the FFT reveals how the filtering process affects different frequency ranges:</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.2/im1_fft.jpg" alt="Derek FFT" class="comparison-img">
+            <div class="caption">Derek FFT (Original)</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.2/im2_fft.jpg" alt="Nutmeg FFT" class="comparison-img">
+            <div class="caption">Nutmeg FFT (Original)</div>
+        </div>
+    </div>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.2/low_freq_fft.jpg" alt="Low Frequency FFT" class="comparison-img">
+            <div class="caption">Low Frequency FFT</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.2/high_freq_fft.jpg" alt="High Frequency FFT" class="comparison-img">
+            <div class="caption">High Frequency FFT</div>
+        </div>
+    </div>
+    
+    <h5>Final Hybrid Image</h5>
+    <p>The final hybrid combines both components. When viewed closely, you can see Nutmeg's details, but when viewed from a distance or at a small size, Derek's face appears more clear.</p>
+    
+    <div class="image-container">
+        <img src="media/2.2/hybrid.jpg" alt="Derek Nutmeg Hybrid" class="comparison-img">
+        <div class="caption">Derek + Nutmeg Hybrid Image</div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/2.2/hybrid_fft.jpg" alt="Hybrid FFT" class="comparison-img">
+        <div class="caption">Hybrid Image FFT - Shows combined frequency content</div>
+    </div>
+    
+    <h4>Albert Einstein + Marilyn Monroe Hybrid</h4>
+    <p>I wanted to recreate one of the more famous hybrid images between Albert Einstein and Marilyn Monroe. In my image, Einstein provides the low-frequency component (σ = 4) while Monroe contributes the high-frequency details (σ = 1.5). In the image, Einstein's overall face shape is visible from far away, while Monroe's features are apparent up close.</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.2/einstein.jpg" alt="Einstein Original" class="comparison-img">
+            <div class="caption">Albert Einstein (Original) - Low Frequency Source</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.2/marilyn.jpg" alt="Marilyn Original" class="comparison-img">
+            <div class="caption">Marilyn Monroe (Original) - High Frequency Source</div>
+        </div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/2.2/einstein_marilyn_hybrid.jpg" alt="Einstein Marilyn Hybrid" class="comparison-img">
+        <div class="caption">Albert Einstein + Marilyn Monroe Hybrid Image</div>
+    </div>
+    
+    <h4>Arthur Morgan + John Marston Hybrid</h4>
+    <p>The Arthur Morgan + John Marston hybrid uses Arthur's low frequencies (σ = 10) and John's high frequencies (σ = 6). These characters are from the video game Red Dead Redemption 2.</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.2/arthur.jpg" alt="Arthur Original" class="comparison-img">
+            <div class="caption">Arthur Morgan (Original) - Low Frequency Source</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.2/john.jpg" alt="John Original" class="comparison-img">
+            <div class="caption">John Marston (Original) - High Frequency Source</div>
+        </div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/2.2/arthur_john_hybrid.jpg" alt="Arthur John Hybrid" class="comparison-img">
+        <div class="caption">Arthur Morgan + John Marston Hybrid Image</div>
+    </div>
+    
+    
+    <h3>Part 2.3: Multi-resolution Blending</h3>
+    
+    <p>Multi-resolution blending uses Gaussian and Laplacian stacks to seamlessly combine images by blending different frequency bands separately.</p>
+    
+    <h4>Original Images</h4>
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.3/apple.jpeg" alt="Apple" class="comparison-img">
+            <div class="caption">Apple</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.3/orange.jpeg" alt="Orange" class="comparison-img">
+            <div class="caption">Orange</div>
+        </div>
+    </div>
+    
+    <h4>Gaussian Stacks</h4>
+    <p>The Gaussian stacks were created by applying progressive blurring to the original image, providing progressively blurrier images, isolating different frequencies.</p>
+    
+    <div class="image-container">
+        <img src="media/2.3/apple_gaussian_stack.jpg" alt="Apple Gaussian Stack" class="code-img">
+        <div class="caption">Apple Gaussian Stack</div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/2.3/orange_gaussian_stack.jpg" alt="Orange Gaussian Stack" class="code-img">
+        <div class="caption">Orange Gaussian Stack</div>
+    </div>
+    
+    <h4>Laplacian Stacks</h4>
+    <p>The Laplacian stack is computed by taking the difference between consecutive Gaussian levels which we found above, which isolates specific frequency bands that can be blended independently.</p>
+    
+    <div class="image-container">
+        <img src="media/2.3/apple_laplacian_stack.jpg" alt="Apple Laplacian Stack" class="code-img">
+        <div class="caption">Apple Laplacian Stack</div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/2.3/orange_laplacian_stack.jpg" alt="Orange Laplacian Stack" class="code-img">
+        <div class="caption">Orange Laplacian Stack</div>
+    </div>
+    
+    <h4>Multi-resolution Blending Process</h4>
+    <p>The blending process works by applying the mask to each frequency band separately, then summing all the masked bands together to create the final blend.</p>
+    
+    <div class="image-container">
+        <img src="media/2.3/oraple_blend_process.jpg" alt="Oraple Blending Process" class="code-img">
+        <div class="caption">Multi-resolution Blending Process: Each row shows masked components and blended result per frequency level</div>
+    </div>
+    
+    <h4>Custom Blends</h4>
+    
+    <h5>Autumn-Winter Road (Vertical Mask)</h5>
+    <p>This blend shows a transition between seasons using a vertical line mask to combine autumn and winter road scenes. These images were taken from the following website: https://www.boredpanda.com/same-location-different-seasons-photography-albert-dros/ </p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.3/autumn_road.jpg" alt="Autumn Road" class="comparison-img">
+            <div class="caption">Autumn Road</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.3/winter_road.jpg" alt="Winter Road" class="comparison-img">
+            <div class="caption">Winter Road</div>
+        </div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/2.3/autumn_winter_blend.jpg" alt="Autumn Winter Blend" class="comparison-img">
+        <div class="caption">Autumn-Winter Seasonal Blend</div>
+    </div>
+    
+    <h5>Sun in Night Sky (Irregular Mask)</h5>
+    <p>This blend uses a circular irregular mask to create a kind of portal effect, placing the bright sun within a dark night sky scene.</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/2.3/sun.jpg" alt="Sun" class="comparison-img">
+            <div class="caption">Sun</div>
+        </div>
+        <div class="image-item">
+            <img src="media/2.3/night_sky.jpeg" alt="Night Sky" class="comparison-img">
+            <div class="caption">Night Sky</div>
+        </div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/2.3/sun_night_sky_blend.jpg" alt="Sun Night Sky Blend" class="comparison-img">
+        <div class="caption">Sun Portal in Night Sky</div>
+    </div>
+    
+    <h3>Most Important Thing I Learned</h3>
+    
+    <p>I think that the most important thing that I learned while doing the project was how different frequencies define certain aspects of images, and what exactly those frequencies look like. During lecture, Prof Efros showed us a bunch of examples, but it didn't really click until I was actually creating these images myself and isolating different frequencies. I got to see how exactly these worked when doing the image sharpening, hybrid images, and the blended images.</p>
+    
+</body>
+</html>
