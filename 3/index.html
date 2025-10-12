@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 3: Stitching Photo Mosaics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #666;
+            margin-top: 25px;
+        }
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .image-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .image-item {
+            text-align: center;
+        }
+        img {
+            max-width: 400px;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .comparison-img {
+            max-width: 350px;
+        }
+        .code-img {
+            max-width: 600px;
+        }
+        .matrix-img {
+            max-width: 500px;
+        }
+        .mosaic-img {
+            max-width: 800px;
+        }
+        p {
+            text-align: justify;
+            margin: 15px 0;
+        }
+        .caption {
+            font-style: italic;
+            color: #666;
+            margin-top: 5px;
+        }
+        ul {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project 3: Stitching Photo Mosaics</h1>
+    
+    <h2>Part A.1: Shoot the Pictures</h2>
+    
+    <p>I shot two sets of photographs so that the transforms between them are projective. I took two photos, only rotating my camera's phone without moving it.</p>
+    
+    <h3>Image Set 1: Door</h3>
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/door1.jpg" alt="Door View 1" class="comparison-img">
+            <div class="caption">First view: Middle of the door</div>
+        </div>
+        <div class="image-item">
+            <img src="media/door2.jpg" alt="Door View 2" class="comparison-img">
+            <div class="caption">Second view: Top of the door</div>
+        </div>
+    </div>
+    
+    <h3>Image Set 2: Decorative Shelf</h3>
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/shelf_left.jpg" alt="Shelf Left View" class="comparison-img">
+            <div class="caption">Left view</div>
+        </div>
+        <div class="image-item">
+            <img src="media/shelf_right.jpg" alt="Shelf Right View" class="comparison-img">
+            <div class="caption">Right view</div>
+        </div>
+    </div>
+        
+    <h2>Part A.2: Recover Homographies</h2>
+    
+    <p>To stitch images together, I needed to compute the homography matrix that relates corresponding points between two images. This involves implementing the computeH function and manually defining point correspondences.</p>
+    
+    <h3>computeH Function Implementation</h3>
+    <p>The computeH function takes corresponding points from two images and computes the homography matrix that maps points from the first image to the second image. It sets up a system of linear equations and solves for the homography parameters using least squares.</p>
+    
+    <div class="image-container">
+        <img src="media/computeH.png" alt="computeH Function Implementation" class="code-img">
+        <div class="caption">Implementation of the computeH function that computes homography from point correspondences</div>
+    </div>
+    
+    <p>The function works by setting up the constraint equations for each point correspondence. For each pair of corresponding points (x,y) in image 1 and (x',y') in image 2, we get two linear equations in the homography parameters. With at least 4 point correspondences, we can solve this over-determined system using least squares to recover the 3x3 homography matrix.</p>
+    
+    <h3>Point Correspondences</h3>
+    <p>I manually selected corresponding points between image pairs using another student's tool for homography computation. Below are the displayed point pairs used for homography.</p>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/point_correspondences.png" alt="Shelf Point Correspondences" class="code-img">
+            <div class="caption">Point correspondences for shelf image pair</div>
+        </div>
+        <div class="image-item">
+            <img src="media/point_correspondences2.png" alt="Door Point Correspondences" class="code-img">
+            <div class="caption">Point correspondences for door image pair</div>
+        </div>
+    </div>
+    
+    <h3>System of Equations and Homography Matrix</h3>
+    <p>I chose to use the pictures of the doors for the following system of equations and recovered homography matrix:</p>
+    
+    <div class="image-container">
+        <img src="media/system_of_equations.png" alt="System of Equations" class="matrix-img">
+        <div class="caption">System of linear equations derived from point correspondences</div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/homography_matrix.png" alt="Recovered Homography Matrix" class="matrix-img">
+        <div class="caption">Recovered homography matrix from least squares solution</div>
+    </div>
+    
+    <h2>Part A.3: Warp the Images</h2>
+    
+    <p>With the homography matrix computed, I can now warp images using inverse warping to rectify planar surfaces or align images for stitching. I implemented both nearest neighbor and bilinear interpolation methods.</p>
+    
+    <h3>Interpolation Functions</h3>
+    <p>Before implementing the warping functions, I created interpolation functions to handle pixel value computation at non-integer coordinates.</p>
+    
+    <div class="image-container">
+        <img src="media/interpolations.png" alt="Interpolation Functions" class="code-img">
+        <div class="caption">Implementation of nearest neighbor and bilinear interpolation functions</div>
+    </div>
+    
+    <p>These interpolation functions handle the sampling of pixel values when the warped coordinates don't fall exactly on integer pixel locations. Nearest neighbor simply rounds to the closest pixel, while bilinear interpolation computes a weighted average of the four surrounding pixels.</p>
+    
+    <h3>Warping Implementation</h3>
+    <p>The core warpImage function performs inverse warping by mapping each pixel in the output image back to the source image using the inverse homography.</p>
+    
+    <div class="image-container">
+        <img src="media/warpImage.png" alt="warpImage Function" class="code-img">
+        <div class="caption">Core warpImage function implementation using inverse warping</div>
+    </div>
+    
+    <p>The function works by iterating through each pixel in the output image, applying the inverse homography to find the corresponding location in the source image, and then using interpolation to compute the pixel value.</p>
+    
+    <div class="image-container">
+        <img src="media/warpImageWrapper.png" alt="warpImage Wrapper Functions" class="code-img">
+        <div class="caption">Wrapper functions for nearest neighbor and bilinear warping</div>
+    </div>
+    
+    <p>The wrapper functions provide convenient interfaces for applying either nearest neighbor or bilinear interpolation during the warping process.</p>
+    
+    <h3>Rectification Results</h3>
+    
+    <h4>Painting 1 Rectification</h4>
+    <p>Here is the original painting with perspective distortion and its rectified versions using both interpolation methods:</p>
+    
+    <div class="image-container">
+        <img src="media/painting.jpg" alt="Original Painting 1" class="comparison-img">
+        <div class="caption">Original painting with perspective distortion</div>
+    </div>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/rectified_painting_nearest.png" alt="Painting 1 Nearest Neighbor" class="comparison-img">
+            <div class="caption">Rectified using nearest neighbor interpolation</div>
+        </div>
+        <div class="image-item">
+            <img src="media/rectified_painting_bilinear.png" alt="Painting 1 Bilinear" class="comparison-img">
+            <div class="caption">Rectified using bilinear interpolation</div>
+        </div>
+    </div>
+    
+    <h4>Painting 2 Rectification</h4>
+    <p>Second painting example showing the rectification results:</p>
+    
+    <div class="image-container">
+        <img src="media/painting2.jpg" alt="Original Painting 2" class="comparison-img">
+        <div class="caption">Original painting with perspective distortion</div>
+    </div>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/rectified_painting2_nearest.png" alt="Painting 2 Nearest Neighbor" class="comparison-img">
+            <div class="caption">Rectified using nearest neighbor interpolation</div>
+        </div>
+        <div class="image-item">
+            <img src="media/rectified_painting2_bilinear.png" alt="Painting 2 Bilinear" class="comparison-img">
+            <div class="caption">Rectified using bilinear interpolation</div>
+        </div>
+    </div>
+    
+    <h4>Interpolation Method Comparison</h4>
+    <p>Nearest neighbor interpolation is faster than bilinear interpolation but is theoretically worse quality due to potential aliasing and blocky artifacts. However, with my rectified images, even after zooming into the paintings, I couldn't notice a quality difference between the two methods. Both produced visually similar results for this rectification task, suggesting that for this particular application, the simpler nearest neighbor method may be sufficient.</p>
+    
+    <h2>Part A.4: Blend the Images into a Mosaic</h2>
+    
+    <p>Using the computed homographies and warping functions, I can now create seamless photo mosaics by warping and blending multiple images together. I created three different mosaics using weighted averaging for image blending.</p>
+    
+    <h3>Mosaic Creation Procedure</h3>
+    <p>My mosaic creation process involves the following steps:</p>
+    <ol>
+        <li><strong>Canvas Size Calculation:</strong> First, I determine the optimal canvas size by transforming the corners of both images and finding the bounding box that contains all projected points.</li>
+        <li><strong>Image Warping:</strong> The second image is warped using the computed homography and bilinear interpolation to align with the first image's coordinate system.</li>
+        <li><strong>Mask Creation:</strong> Binary masks are generated for both images to track which pixels contain valid image data versus empty space.</li>
+        <li><strong>Distance-Based Blending:</strong> In overlapping regions, I use distance transform weighting where each pixel's contribution is weighted by its distance from the nearest image boundary..</li>
+        <li><strong>Final Compositing:</strong> Non-overlapping regions use pixels directly from their respective images, while overlapping areas use the weighted blend to create seamless transitions.</li>
+    </ol>
+    
+    <h3>Shelf Mosaic</h3>
+    <p>The first mosaic combines the shelf images:</p>
+    
+    <h4>Source Images</h4>
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/shelf_left.jpg" alt="Shelf Left" class="comparison-img">
+            <div class="caption">Left view of decorative shelf</div>
+        </div>
+        <div class="image-item">
+            <img src="media/shelf_right.jpg" alt="Shelf Right" class="comparison-img">
+            <div class="caption">Right view of decorative shelf</div>
+        </div>
+    </div>
+    
+    <h4>Mosaic Result</h4>
+    <div class="image-container">
+        <img src="media/shelf_mosaic.png" alt="Shelf Mosaic" class="mosaic-img">
+    </div>
+    
+    <h3>Door Mosaic</h3>
+    <p>The second mosaic combines the door images:</p>
+    
+    <h4>Source Images</h4>
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/door1.jpg" alt="Door View 1" class="comparison-img">
+            <div class="caption">Front of door</div>
+        </div>
+        <div class="image-item">
+            <img src="media/door2.jpg" alt="Door View 2" class="comparison-img">
+            <div class="caption">Top of door</div>
+        </div>
+    </div>
+    
+    <h4>Mosaic Result</h4>
+    <div class="image-container">
+        <img src="media/door_mosaic.png" alt="Door Mosaic" class="mosaic-img">
+    </div>
+    
+    <h3>Room Mosaic</h3>
+    <p>The third mosaic combines the room images:</p>
+    
+    <h4>Source Images</h4>
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/room1.jpg" alt="Room View 1" class="comparison-img">
+            <div class="caption">First room perspective</div>
+        </div>
+        <div class="image-item">
+            <img src="media/room2.jpg" alt="Room View 2" class="comparison-img">
+            <div class="caption">Second room perspective</div>
+        </div>
+    </div>
+    
+    <h4>Mosaic Result</h4>
+    <div class="image-container">
+        <img src="media/room_mosaic.png" alt="Room Mosaic" class="mosaic-img">
+    </div>
+    
+</body>
+</html>
