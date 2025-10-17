@@ -347,6 +347,19 @@
     <h3>B.4: RANSAC for Robust Homography</h3>
     <p>Many feature matches contain outliers that would corrupt homography estimation. RANSAC repeatedly samples 4 random matches, computes a homography, and counts how many matches are consistent with this homography. The homography with the most inliers is refined using all inlier matches.</p>
 
+    <h4>RANSAC Implementation</h4>
+    <p>I implemented RANSAC from scratch with helper functions for converting matches to points and testing inliers:</p>
+
+    <div class="image-container">
+        <img src="media/ransac_helpers.png" alt="RANSAC helper functions" class="code-img">
+        <p class="caption">Helper functions: converting matches to point coordinates and testing if points are inliers</p>
+    </div>
+
+    <div class="image-container">
+        <img src="media/ransac.png" alt="RANSAC main function" class="code-img">
+        <p class="caption">Main RANSAC function that iteratively samples 4 points, computes homography, and finds the best set of inliers</p>
+    </div>
+
     <h4>Roof Automatic Mosaic</h4>
     <p>First, here's the automatic mosaic created from the roof images using the complete feature matching pipeline:</p>
 
