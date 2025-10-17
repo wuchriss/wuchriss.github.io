@@ -72,6 +72,19 @@
             margin: 15px 0;
             padding-left: 30px;
         }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .comparison-item {
+            text-align: center;
+        }
+        .comparison-item img {
+            width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -293,6 +306,81 @@
     <div class="image-container">
         <img src="media/room_mosaic.png" alt="Room Mosaic" class="mosaic-img">
     </div>
+    
+    <h2>Part B: Feature Matching for Autostitching</h2>
+
+    <h3>B.1: Harris Corner Detection</h3>
+    <p>This section implements Harris corner detection using the provided harris.py file, followed by Adaptive Non-Maximal Suppression (ANMS) to distribute corners spatially across the image.</p>
+
+    <h4>Harris Corner Detection</h4>
+    <p>Using the Harris corner detector on a single scale, we extract interest points from the roof image:</p>
+
+    <div class="image-container">
+        <img src="media/harris_corners_roof1.png" alt="Harris Corners detected on roof image">
+        <p class="caption">Harris corners detected on roof image (2004 corners)</p>
+    </div>
+
+    <h4>Adaptive Non-Maximal Suppression (ANMS)</h4>
+    <p>ANMS selects a subset of Harris corners that are well-distributed spatially. Instead of choosing the strongest corners (which tend to cluster), ANMS picks corners that are strongest in their local neighborhood:</p>
+
+    <div class="image-container">
+        <img src="media/harris_vs_anms_comparison.png" alt="Comparison of all Harris corners vs ANMS selected corners" class="mosaic-img">
+        <p class="caption">Left: All Harris corners (2004). Right: ANMS selected corners (500).</p>
+    </div>
+
+    <h3>B.2: Feature Descriptor Extraction</h3>
+    <p>For each corner point, we extract an 8×8 feature descriptor by sampling from a 40×40 window with spacing of 5 pixels. The descriptors are bias/gain normalized (mean=0, std=1) to be invariant to lighting changes.</p>
+
+    <div class="image-container">
+        <img src="media/feature_descriptors.png" alt="Sample 8x8 feature descriptors">
+        <p class="caption">Sample 8×8 feature descriptors extracted from corners. Each descriptor captures local texture patterns.</p>
+    </div>
+
+    <h3>B.3: Feature Matching</h3>
+    <p>Features are matched between image pairs using Lowe's ratio test. For each feature in image 1, we find its closest and second-closest matches in image 2. Features are accepted as matches only if the ratio of distances (1st-NN/2nd-NN) is below a threshold.</p>
+
+    <div class="image-container">
+        <img src="media/feature_matches_roof1_roof2.png" alt="Feature matches between roof images" class="mosaic-img">
+        <p class="caption">Feature matches between roof1 and roof2 images.</p>
+    </div>
+
+    <h3>B.4: RANSAC for Robust Homography</h3>
+    <p>Many feature matches contain outliers that would corrupt homography estimation. RANSAC repeatedly samples 4 random matches, computes a homography, and counts how many matches are consistent with this homography. The homography with the most inliers is refined using all inlier matches.</p>
+
+    <h4>Roof Automatic Mosaic</h4>
+    <p>First, here's the automatic mosaic created from the roof images using the complete feature matching pipeline:</p>
+
+    <div class="image-container">
+        <img src="media/automatic_mosaic_roof.png" alt="Automatic roof mosaic" class="mosaic-img">
+    </div>
+
+    <h4>Automatic vs Manual Stitching Comparison</h4>
+    <p>I also applied the automatic stitching pipeline to the room and door image pairs from Part A. Below are comparisons between the manually stitched mosaics and the automatically stitched versions. The mosaics are virtually identical, showing that the automatic stitching works as intended:</p>
+
+    <h5>Room Images: Manual vs Automatic</h5>
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/room_mosaic.png" alt="Manual room mosaic" class="comparison-img">
+            <div class="caption">Manual mosaic (Part A)</div>
+        </div>
+        <div class="image-item">
+            <img src="media/automatic_mosaic_room.png" alt="Automatic room mosaic" class="comparison-img">
+            <div class="caption">Automatic mosaic (Part B)</div>
+        </div>
+    </div>
+
+    <h5>Door Images: Manual vs Automatic</h5>
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/door_mosaic.png" alt="Manual door mosaic" class="comparison-img">
+            <div class="caption">Manual mosaic (Part A)</div>
+        </div>
+        <div class="image-item">
+            <img src="media/automatic_mosaic_door.png" alt="Automatic door mosaic" class="comparison-img">
+            <div class="caption">Automatic mosaic (Part B)</div>
+        </div>
+    </div>
+
     
 </body>
 </html>
