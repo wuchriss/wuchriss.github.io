@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 4: Neural Radiance Fields</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #666;
+            margin-top: 25px;
+        }
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .image-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .image-item {
+            text-align: center;
+        }
+        img {
+            max-width: 400px;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .large-img {
+            max-width: 900px;
+        }
+        .medium-img {
+            max-width: 500px;
+        }
+        .grid-img {
+            max-width: 700px;
+        }
+        p {
+            text-align: justify;
+            margin: 15px 0;
+        }
+        .caption {
+            font-style: italic;
+            color: #666;
+            margin-top: 5px;
+        }
+        ul {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-left: 4px solid #ffeaa7;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project 4: Neural Radiance Fields</h1>
+    
+    <h2>Part 0: Camera Calibration and 3D Object Scanning</h2>
+    
+    <p>I calibrated my camera using ArUco markers from 44 calibration images. Then I captured 40 images of an apple with a single ArUco tag and used cv2.solvePnP() to estimate camera poses with 100% success rate. Finally, I undistorted all images and created a dataset in .npz format for NeRF training.</p>
+    
+    <h3>Camera Pose Visualization</h3>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/VISER1.png" alt="Camera Frustums Visualization 1" class="medium-img">
+            <div class="caption">Viser 3D visualization showing camera frustums from multiple viewpoints</div>
+        </div>
+        <div class="image-item">
+            <img src="media/VISER2.png" alt="Camera Frustums Visualization 2" class="medium-img">
+            <div class="caption">Alternative view of the camera trajectory around the object</div>
+        </div>
+    </div>
+    
+    <h2>Part 1: Fitting a Neural Field to a 2D Image</h2>
+    
+    <p>I implemented a multilayer perceptron with sinusoidal positional encoding to map 2D coordinates to RGB colors. The network was trained using random pixel sampling with MSE loss and Adam optimizer.</p>
+    
+    <h3>Model Architecture</h3>
+    
+    <div class="highlight">
+        <strong>Architecture Details:</strong>
+        <ul>
+            <li><strong>Layers:</strong> 4 linear layers (42 → 256 → 256 → 256 → 3)</li>
+            <li><strong>Width:</strong> 256 hidden units</li>
+            <li><strong>Positional Encoding:</strong> L=10 max frequency, 42D output</li>
+            <li><strong>Learning Rate:</strong> 1e-2</li>
+            <li><strong>Activation:</strong> ReLU + final Sigmoid</li>
+        </ul>
+    </div>
+    
+    <h3>Input Images</h3>
+    
+    <div class="image-row">
+        <div class="image-item">
+            <img src="media/fox.jpg" alt="Fox Image" class="medium-img">
+            <div class="caption">Provided fox test image</div>
+        </div>
+        <div class="image-item">
+            <img src="media/e33.jpeg" alt="Custom E33 Image" class="medium-img">
+            <div class="caption">Custom image from Expedition 33</div>
+        </div>
+    </div>
+    
+    <h3>Training Progression</h3>
+    
+    <div class="image-container">
+        <img src="media/training_progression.png" alt="Training Progression" class="large-img">
+        <div class="caption">Training progression on the fox image over 1000 iterations</div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/custom_training_progression.png" alt="Custom Training Progression" class="large-img">
+        <div class="caption">Training progression on image from the video game Expedition 33</div>
+    </div>
+    
+    <h3>Hyperparameter Results</h3>
+    
+    <div class="image-container">
+        <img src="media/hyperparameter_grid.png" alt="Hyperparameter Grid Results" class="grid-img">
+        <div class="caption">2×2 grid: frequency levels (L=2 vs L=10) and width (64 vs 256)</div>
+    </div>
+    
+    <h3>PSNR Training Curve</h3>
+    
+    <div class="image-container">
+        <img src="media/e33_psnr_curve.png" alt="PSNR Curve" class="medium-img">
+        <div class="caption">PSNR training curve showing steady improvement over iterations</div>
+    </div>
+    
+    <h2>Part 2: Neural Radiance Fields (NeRF)</h2>
+    
+    <p>I implemented a full 3D NeRF to reconstruct the lego bulldozer from the original NeRF paper dataset. Using 100 training images, 10 validation images, and 60 test camera poses (all at 200×200 resolution), the NeRF learns to synthesize novel viewpoints through volumetric ray marching and neural density/color prediction.</p>
+    
+    <h3>Implementation Overview</h3>
+    
+    <p><strong>Ray Generation:</strong> I implemented the camera-to-world coordinate transformations and pixel-to-ray conversion using camera intrinsics. Each pixel generates a ray with origin at the camera center and direction computed by transforming the pixel through camera coordinates to world space. The ray directions are normalized and account for the 0.5 pixel center offset.</p>
+    
+    <p><strong>Sampling Strategy:</strong> Rather than sampling rays from individual images, I use global random sampling across all training images to get 2048 rays per batch. Along each ray, I sample 48 points between near=2.0 and far=6.0 bounds with random perturbation during training to avoid overfitting to fixed sample locations.</p>
+    
+    <p><strong>NeRF Architecture:</strong> The network is an 8-layer MLP that takes 3D positions (encoded with L=10 frequencies) and viewing directions (encoded with L=4 frequencies) as input. It outputs RGB color and volume density. Key architectural features include a skip connection at layer 5 that re-injects the positional encoding, and separate heads for density (ReLU activated) and color (Sigmoid activated) prediction.</p>
+    
+    <p><strong>Volume Rendering:</strong> I implemented the discrete volume rendering equation from the spec. For each ray, the final pixel color is computed as a weighted sum of colors along the ray, where the weights are calculated from the predicted densities at each sample point following the provided equations.</p>
+    
+    <h3>Ray Sampling Visualization</h3>
+    
+    <div class="image-container">
+        <img src="media/ray_sampling.png" alt="Ray Sampling Visualization" class="medium-img">
+        <div class="caption">Visualization of camera frustums with 100 sampled rays and points along each ray</div>
+    </div>
+    
+    <h3>Training Progression</h3>
+    
+    <div class="image-container">
+        <img src="media/training_progression_lego.png" alt="NeRF Training Progression" class="large-img">
+        <div class="caption">NeRF training progression on lego</div>
+    </div>
+    
+    <h3>Final Results Comparison</h3>
+    
+    <div class="image-container">
+        <img src="media/final_comparison.png" alt="Final Results" class="medium-img">
+        <div class="caption">Final rendered image compared to ground truth validation image</div>
+    </div>
+    
+    <h3>Validation PSNR Curve</h3>
+    
+    <div class="image-container">
+        <img src="media/psnr_curve_lego.png" alt="NeRF PSNR Curve" class="medium-img">
+        <div class="caption">Validation PSNR during lego training, reaching 23.24 dB</div>
+    </div>
+    
+    <h3>Novel View Synthesis</h3>
+    
+    <div class="image-container">
+        <img src="media/spherical_rendering.gif" alt="Spherical Rendering" class="medium-img">
+        <div class="caption">Spherical rendering of the lego video</div>
+    </div>
+    
+    <h3>Part 2.6: Training on Your Own Data</h3>
+    
+    <p>I attempted to train a NeRF on my own captured apple dataset from Part 0 but couldn't get it to work successfully and it looks too blurry. Also the apple is blue from a RGB/BGR conversion error. Here are my results anyway:</p>
+    
+    <div class="image-container">
+        <img src="media/custom_training_progression_apple.png" alt="Apple Training Progression" class="large-img">
+        <div class="caption">(Failed) Training progression on my apple dataset</div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/custom_training_loss_apple.png" alt="Apple Training Curve" class="medium-img">
+        <div class="caption">Training curve for the apple dataset</div>
+    </div>
+    
+    <div class="image-container">
+        <img src="media/custom_nerf_apple.gif" alt="Apple Novel Views" class="medium-img">
+        <div class="caption">(Failed) Novel view synthesis of the apple</div>
+    </div>
+    
+</body>
+</html>
